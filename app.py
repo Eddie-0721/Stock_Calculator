@@ -1,3 +1,8 @@
+"""
+@Author      :   Eddie 
+@Time        :   2024/04/02 12:48:35
+@Description :   这是一个股票计算器
+"""
 from flask import Flask, render_template, request, jsonify, abort
 import os
 
@@ -13,7 +18,7 @@ STAMP_TAX_RATE = float(os.getenv('STAMP_TAX_RATE', '0.001'))  # 印花税率
 def index():
     """
     首页路由处理函数，当用户访问网站根URL时调用。
-    渲染并返回index.html模板。
+    渲染并返回index.html模板。  
     """
     return render_template("index.html")
 
