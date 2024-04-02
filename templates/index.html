@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>股票计算器</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f7f8fa;
+            padding-top: 50px;
+            font-family: Arial, sans-serif;
+        }
+        .calculator-container {
+            display: flex;
+            justify-content: space-around;
+            max-width: 1200px;
+            margin: auto;
+        }
+        .calculator {
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+            width: 45%;
+        }
+        h2 {
+            color: #495057;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-label {
+            font-weight: bold;
+            color: #495057;
+        }
+        .btn-primary, .btn-info, .btn-secondary {
+            width: 100%;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            background-color: #343a40;
+            border-color: #343a40;
+            color: #FFFFFF;
+        }
+        .btn-primary:hover, .btn-info:hover, .btn-secondary:hover {
+            background-color: #23272b;
+        }
+        .form-control {
+            border-radius: 5px;
+            border: 1px solid #ced4da;
+            color: #495057;
+        }
+        .form-control:focus {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        #profit-results, #increase-results {
+            margin-top: 30px;
+        }
+        .result-card {
+            background-color: #F4F5F7;
+            border: 1px solid #DFE1E6;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+        }
+        .result-header {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #495057; /* Updated color */
+        }
+        .result-details {
+            font-size: 16px;
+            margin-bottom: 5px;
+            color: #6c757d; /* Updated color */
+        }
+        .result-highlight {
+            font-weight: bold;
+            color: #0052CC; /* Kept the original color for emphasis */
+        }
+    </style>
+</head>
+<body>
+    <div class="container calculator-container">
+        <div class="calculator" id="profit-calculator">
+            <h2>股票盈利计算器</h2>
+            <form id="profit-form">
+                <div class="form-group">
+                    <label for="initial_price" class="form-label">初始价格(￥):</label>
+                    <input type="number" class="form-control" id="initial_price" name="initial_price" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="current_price" class="form-label">当前价格(￥):</label>
+                    <input type="number" class="form-control" id="current_price" name="current_price" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="shares" class="form-label">持有股票数量:</label>
+                    <input type="number" class="form-control" id="shares" name="shares" required>
+                </div>
+                <button type="submit" class="btn btn-primary">计算盈利</button>
+                <button type="button" class="btn btn-secondary" id="clear-profit-form">清空盈利计算结果</button>
+            </form>
+
+            <div id="profit-results"></div>
+        </div>
+
+        <div class="calculator" id="increase-calculator">
+            <h2>股票涨幅计算器</h2>
+            <form id="increase-form">
+                <div class="form-group">
+                    <label for="current_price_increase" class="form-label">当前价格(￥):</label>
+                    <input type="number" class="form-control" id="current_price_increase" name="current_price_increase" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="increase_percentage" class="form-label">预期涨幅(%):</label>
+                    <input type="number" class="form-control" id="increase_percentage" name="increase_percentage" step="0.01" required>
+                </div>
+                <button type="submit" class="btn btn-info">计算涨幅</button>
+                <button type="button" class="btn btn-secondary" id="clear-increase-form">清空涨幅计算结果</button>
+            </form>
+
+            <div id="increase-results"></div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.7.0/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('profit-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const initial_price = document.getElementById('initial_price').value;
+                const current_price = document.getElementById('current_price').value;
+                const shares = document.getElementById('shares').value;
+
+                
+                fetch('/calculate_stock_profit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        initial_price: initial_price,
+                        current_price: current_price,
+                        shares: shares
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const profitAmount = parseFloat(data.profit);
+                    const profitColor = profitAmount >= 0 ? 'red' : 'green'; // Set font color based on profit
+
+                    document.getElementById('profit-results').innerHTML = `
+                    <div class="result-card">
+                        <div class="result-header">预期利润</div>
+                        <div class="result-details">
+                            成本总额: <span class="result-highlight">￥${data.total_cost}</span><br>
+                            现价总额: <span class="result-highlight">￥${data.total_income}</span><br>
+                            利润金额: <span class="result-highlight" style="color: ${profitColor};">￥${data.profit}</span><br>
+                            涨幅百分比: <span class="result-highlight">${data.percentage_gain}%</span><br>
+                            保本价格: <b><span class="result-highlight" style="color: black">￥${data.breakeven_price}</span></b><br>
+                            <span class="result-highlight" style="font-size: 13px">佣金: ￥${data.commission_sell}</span>
+                            <span class="result-highlight" style="font-size: 13px">过户费: ￥${data.transfer_fee_sell}</span>
+                            <span class="result-highlight" style="font-size: 13px">印花税: ￥${data.stamp_tax}</span>
+                        </div>
+                    </div>
+                `;
+                })
+                .catch(error => console.error('Error:', error));
+            });
+
+            document.getElementById('increase-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const current_price_increase = document.getElementById('current_price_increase').value;
+                const increase_percentage = document.getElementById('increase_percentage').value;
+                
+                fetch('/calculate_increase', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        current_price: current_price_increase,
+                        percentage_increase: increase_percentage,
+                    })
+                })
+
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('increase-results').innerHTML = `
+                        <div class="result-card">
+                            <div class="result-header">涨幅后的价格</div>
+                            <div class="result-details">
+                                当前价格: <span class="result-highlight">￥${data.current_price}</span><br>
+                                涨幅百分比: <span class="result-highlight">${data.percentage_increase}%</span><br>
+                                涨幅后价格: <span class="result-highlight">￥${data.increased_price}</span>
+                            </div>
+                        </div>
+                    `;
+                })
+                .catch(error => console.error('Error:', error))
+                .finally(() => {
+                    document.getElementById('loading').style.display = 'none'; // Hide loading indicator
+                });
+            });
+
+            document.getElementById('clear-profit-form').addEventListener('click', function() {
+                document.getElementById('profit-form').reset(); // Reset form
+                document.getElementById('profit-results').innerHTML = ''; // Clear profit results area
+            });
+
+            document.getElementById('clear-increase-form').addEventListener('click', function() {
+                document.getElementById('increase-form').reset(); // Reset form
+                document.getElementById('increase-results').innerHTML = ''; // Clear increase results area
+            });
+
+            function showLoadingIndicator() {
+                document.getElementById('loading').style.display = 'block';
+            }
+
+            function hideLoadingIndicator() {
+                document.getElementById('loading').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
