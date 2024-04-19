@@ -157,4 +157,4 @@ def calculate_breakeven_price():
     })
 
 if __name__ == "__main__":
-    app.run(port=8080, debug=True)  # 启动Flask应用并设置监听的端口
+    app.run(host="0.0.0.0",port=8080, debug=True)  # 启动Flask应用并设置监听的端口
